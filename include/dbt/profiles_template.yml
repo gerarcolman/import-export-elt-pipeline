@@ -1,0 +1,11 @@
+import_export:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: your-gcp-project-id
+      dataset: your_dataset
+      threads: 4
+      keyfile: /path/to/your/service_account.json
+      timeout_seconds: 300

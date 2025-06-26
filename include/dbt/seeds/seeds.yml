@@ -1,0 +1,9 @@
+version: 2
+
+seeds:
+  - name: countries
+    description: List of countries Paraguay has traded goods with
+  - name: customs_regimes
+    description: List of import and export regimes
+  - name: customs
+    description: List of every customs agency in Paraguay, where goods enter or leave the country 

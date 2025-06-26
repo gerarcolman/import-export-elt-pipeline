@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: fact_import_export
+    description: Normalized and clean import export table from Paraguay
+    config:
+      materialized: table
+    columns:
+      - name: operation_id
+        tests:
+          - not_null
+      - name: anho
+        tests: 
+          - not_null
+      - name: mes
+        tests: 
+          - not_null
+          - accepted_values:
+              values: ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
+      - name: cotizacion
+        tests: 
+          - not_null
+      - name: channel
+        tests: 
+          - not_null
+          - accepted_values:
+              values: ['V', 'N', 'R']
+      - name: usage
+        tests: 
+          - not_null
+          - accepted_values:
+              values: ['NUEVO', 'USADO']
+      - name: quantity
+        tests: 
+          - not_null
+      - name: usd_fob
+        tests: 
+          - not_null
+      - name: usd_freight
+        tests: 
+          - not_null
+      - name: usd_insurance
+        tests: 
+          - not_null
+      - name: usd_totals
+        tests: 
+          - not_null

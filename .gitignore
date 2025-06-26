@@ -1,0 +1,38 @@
+# System / Editor Files
+.DS_Store
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environments
+.venv/
+env/
+
+# Git
+.git/
+
+# Secrets & Configs
+.env
+include/gcp/*.json
+include/dbt/profiles.yml
+
+# Airflow
+airflow.db
+airflow.cfg
+airflow-webserver.pid
+webserver_config.py
+logs/
+dags/__pycache__/
+
+# dbt
+include/dbt/target/
+include/dbt/dbt_packages/
+include/dbt/logs/
+
+# Astro CLI
+.astro/
