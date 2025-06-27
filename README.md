@@ -1,6 +1,6 @@
 # ELT Pipeline: Paraguay Import/Export Data
 
-This project demonstrates a fully automated **ELT (Extract, Load, Transform)** pipeline that collects, processes, and visualizes Paraguay’s public trade data. It uses **Apache Airflow (Astro CLI)** for orchestration, **Cosmos** to run dbt transformations within Airflow, **Google Cloud Platform (GCS & BigQuery)** for cloud storage and processing, and **Power BI** for dashboards.
+This project demonstrates a fully automated **ELT (Extract, Load, Transform)** pipeline that collects, processes, and visualizes Paraguay’s public trade data. It uses **Apache Airflow (Astro CLI)** for orchestration, **Cosmos** to run dbt transformations within Airflow, **Google Cloud Platform (GCS & BigQuery)** for cloud storage and processing, and **Power BI** for dashboards (Click the link to interact with the dashboards https://gerarcolman.github.io/import-export-dashboards-website/).
 
 ---
 
@@ -40,7 +40,7 @@ This entire process is **automated** and **repeatable**, built using modern data
    - Structured, maintainable SQL models that reflect business logic
 
 6. **📊 Power BI Dashboards**  
-   Final dbt models feed directly into Power BI reports and dashboards to support exploration and insight generation.
+   Final dbt models feed directly into Power BI reports and dashboards to support exploration and insight generation (Click the link to interact with the dashboards https://gerarcolman.github.io/import-export-dashboards-website/).
 
 Here’s how the data flows into reporting:
 
