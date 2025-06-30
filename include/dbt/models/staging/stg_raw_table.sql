@@ -7,8 +7,8 @@ transform AS (
         operacion AS operation,	
         destinacion AS operation_id,	
         regimen AS regime,
-        `año` AS anho,
-        mes,
+        `año` AS year,
+        mes AS month_name,
         aduana AS customs_name,	
         cotizacion,	
         CASE 

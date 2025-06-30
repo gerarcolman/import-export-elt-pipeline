@@ -26,11 +26,14 @@ measurements AS (
     SELECT * FROM {{ ref('dim_measurements') }}
 ),
 
+dates AS (
+    SELECT * FROM {{ ref('dim_dates') }}
+),
+
 final_fct AS (
     SELECT
         stg.operation_id,
-        stg.anho,
-        stg.mes,
+        dates.date_id,
         customs.customs_id, 
         stg.cotizacion,
         transports.transport_id,
@@ -65,6 +68,9 @@ final_fct AS (
     ON stg.measurement_name=measurements.measurement_name
     INNER JOIN hs_code
     ON stg.hs_code=hs_code.hs_code
+    INNER JOIN dates
+    ON stg.year=dates.year
+    AND stg.month_name=dates.month_name
 
 )
 
