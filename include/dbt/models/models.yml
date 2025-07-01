@@ -9,14 +9,9 @@ models:
       - name: operation_id
         tests:
           - not_null
-      - name: anho
+      - name: date_id
         tests: 
-          - not_null
-      - name: mes
-        tests: 
-          - not_null
-          - accepted_values:
-              values: ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
+          - not_null 
       - name: cotizacion
         tests: 
           - not_null
