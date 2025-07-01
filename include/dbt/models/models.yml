@@ -40,3 +40,26 @@ models:
       - name: usd_totals
         tests: 
           - not_null
+
+  - name: dim_hs_code
+    description: dim table with Harmonized System customs codes. They are a unique identifier to clasiffy type of goods. 
+    columns:
+      - name: hs_code
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_dates
+    columns:
+      - name: date_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_measurements
+    description: Different measurements for all kind of goods
+    columns:
+      - name: measurement_id
+        tests:
+          - not_null
+          - unique
