@@ -56,7 +56,7 @@ def clean_column_names(columns):
         'retries': 1,
         'retry_delay': duration(minutes=1)
     },
-    start_date=datetime(2025, 1, 5),
+    start_date=datetime(2023, 1, 5),
     schedule="@monthly",
     catchup=False,
     tags=["import-export", "Paraguay_2025"],

@@ -3,22 +3,22 @@ WITH staging AS (
 ),
 
 transform AS (
-    SELECT
+    SELECT DISTINCT
         year,
         month_name,
         CASE 
-            WHEN mes = 'ENERO' THEN 1
-            WHEN mes = 'FEBRERO' THEN 2
-            WHEN mes = 'MARZO' THEN 3
-            WHEN mes = 'ABRIL' THEN 4
-            WHEN mes = 'MAYO' THEN 5
-            WHEN mes = 'JUNIO' THEN 6
-            WHEN mes = 'JULIO' THEN 7
-            WHEN mes = 'AGOSTO' THEN 8
-            WHEN mes = 'SEPTIEMBRE' THEN 9  
-            WHEN mes = 'OCTUBRE' THEN 10
-            WHEN mes = 'NOVIEMBRE' THEN 11
-            WHEN mes = 'DICIEMBRE' THEN 12
+            WHEN month_name = 'ENERO' THEN 1
+            WHEN month_name = 'FEBRERO' THEN 2
+            WHEN month_name = 'MARZO' THEN 3
+            WHEN month_name = 'ABRIL' THEN 4
+            WHEN month_name = 'MAYO' THEN 5
+            WHEN month_name = 'JUNIO' THEN 6
+            WHEN month_name = 'JULIO' THEN 7
+            WHEN month_name = 'AGOSTO' THEN 8
+            WHEN month_name = 'SEPTIEMBRE' THEN 9  
+            WHEN month_name = 'OCTUBRE' THEN 10
+            WHEN month_name = 'NOVIEMBRE' THEN 11
+            WHEN month_name = 'DICIEMBRE' THEN 12
         END AS month_number
 
     FROM staging
