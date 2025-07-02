@@ -63,3 +63,11 @@ models:
         tests:
           - not_null
           - unique
+    
+  - name: customs
+    description: List of every customs agency in Paraguay, where goods enter or leave the country 
+    columns:
+      - name: customs_id
+        tests:
+          - not_null
+          - unique 

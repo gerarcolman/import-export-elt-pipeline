@@ -11,7 +11,7 @@ customs_regimes AS (
 ),
 
 customs AS (
-    SELECT * FROM {{ ref('customs') }}
+    SELECT * FROM {{ ref('dim_customs') }}
 ),
 
 transports AS (
