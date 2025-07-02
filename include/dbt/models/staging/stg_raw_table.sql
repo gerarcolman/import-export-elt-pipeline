@@ -1,5 +1,5 @@
 WITH source AS (
-    SELECT * FROM {{ source('raw_import_export_2025', 'datos_abiertos_raw') }}
+    SELECT * FROM {{ source('raw_import_export', 'datos_abiertos_raw') }}
 ),
 
 transform AS (
