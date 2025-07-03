@@ -1,5 +1,6 @@
 from airflow.decorators import dag, task
 from pendulum import datetime, duration
+import requests
 from google.cloud import storage
 import os
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
@@ -23,20 +24,22 @@ def extract_date_parts(logical_date: datetime):
 
     return {"year": year, "url_month": url_month}
 
-def get_url(logical_date: datetime):
+def get_paths(logical_date: datetime):
     year = extract_date_parts(logical_date)["year"]
     url_month = extract_date_parts(logical_date)["url_month"]
     url = f"https://datosabiertos.aduana.gov.py/all_data/{year}/{url_month}/{year}_{url_month}_Nivel_Item.csv"
-    
-    return url
+    raw_localfile_path = f"/tmp/raw_import_export_{year}_{url_month}.csv"
+    raw_gcp_bucket_path = f"raw/import-export_{year}_{url_month}.csv"
 
-def blob_paths(logical_date: datetime):
-    year = extract_date_parts(logical_date)["year"]
-    url_month = extract_date_parts(logical_date)["url_month"]
-    raw_blob_path = f"raw/import-export_{year}_{url_month}.csv"
-    cleaned_blob_path = f"clean/import-export_{year}_{url_month}_cleaned.csv"
+    return {"url": url, "raw_localfile_path": raw_localfile_path, "raw_gcp_bucket_path": raw_gcp_bucket_path}
 
-    return {"raw_blob_path": raw_blob_path, "cleaned_blob_path": cleaned_blob_path}
+#def blob_paths(logical_date: datetime):
+#    year = extract_date_parts(logical_date)["year"]
+#    url_month = extract_date_parts(logical_date)["url_month"]
+#    raw_blob_path = f"raw/import-export_{year}_{url_month}.csv"
+#    cleaned_blob_path = f"clean/import-export_{year}_{url_month}_cleaned.csv"
+
+#    return {"raw_blob_path": raw_blob_path, "cleaned_blob_path": cleaned_blob_path}
 
 def clean_column_names(columns):
     import re
@@ -64,53 +67,73 @@ def clean_column_names(columns):
 def monthly_csv_pipeline():
 
     @task
-    def upload_blob_from_memory(logical_date):
-        import requests
-        from io import BytesIO
-        """Uploads a file to the bucket."""
+    def download_to_local(logical_date):
+        import pandas as pd
 
-        # The ID of your GCS bucket
-        url = get_url(logical_date)
-
-        # The ID of your GCS object
-        raw_blob_name = blob_paths(logical_date)["raw_blob_path"]
+        url = get_paths(logical_date)["url"]
+        local_file = get_paths(logical_date)["raw_localfile_path"]
 
         response = requests.get(url, stream=True)
         response.raise_for_status()
 
-        csv_bytes = BytesIO(response.content)
+        with open(local_file, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        df = pd.read_csv(local_file, encoding="utf-8", on_bad_lines="skip", engine="python", decimal=',', quotechar='"')
+        df.columns = clean_column_names(df.columns)
+        df.to_csv(local_file, index=False, encoding="utf-8")
+
+        return local_file
+
+    @task
+    def upload_to_gcs(local_file, logical_date):
+        raw_blob_name = get_paths(logical_date)["raw_gcp_bucket_path"]
 
         storage_client = storage.Client()
         bucket = storage_client.bucket(BUCKET_NAME)
         blob = bucket.blob(raw_blob_name)
-        blob.upload_from_file(csv_bytes, rewind=True, content_type='text/csv')
+        
+        with open(local_file, "rb") as f:
+            blob.upload_from_file(f, content_type='text/csv')
 
     @task
-    def cleaned_file(logical_date):
-        import pandas as pd
+    def delete_localfile():
+        from airflow.operators.python import get_current_context
 
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(BUCKET_NAME)
+        context = get_current_context()
+        ti = context["ti"]
+        local_file = ti.xcom_pull(task_ids="download_to_local")
 
-        raw_csv_path = f'gs://{BUCKET_NAME}/{blob_paths(logical_date)["raw_blob_path"]}'
-        df = pd.read_csv(raw_csv_path, encoding='utf-8', engine='python', on_bad_lines='skip', quotechar='"', decimal=',',
-                         usecols=["OPERACION", "DESTINACION", "REGIMEN", "AÑO", "MES", "ADUANA", "COTIZACION", 
-                                  "MEDIO TRANSPORTE", "CANAL", "ITEM", "PAIS ORIGEN", "PAIS PROCEDENCIA/DESTINO", "USO",
-                                  "UNIDAD MEDIDA ESTADISTICA", "CANTIDAD ESTADISTICA", "KILO NETO", "KILO BRUTO", "FOB DOLAR",
-                                  "FLETE DOLAR", "SEGURO DOLAR", "IMPONIBLE DOLAR", "IMPONIBLE GS", "AJUSTE A INCLUIR",
-                                  "AJUSTE A DEDUCIR", "POSICION ", "RUBRO", "DESC CAPITULO" ,"DESC PARTIDA", "DESC POSICION",
-                                  "MERCADERIA", "MARCA ITEM", "ACUERDO"])
+        os.remove(local_file)
 
-        df.columns = clean_column_names(df.columns)
-        df = df.replace('¿', '', regex=True)
+    # @task
+    # def cleaned_file(logical_date):
+    #     import pandas as pd
+
+    #     storage_client = storage.Client()
+    #     bucket = storage_client.bucket(BUCKET_NAME)
+
+    #     raw_csv_path = f'gs://{BUCKET_NAME}/{blob_paths(logical_date)["raw_blob_path"]}'
+    #     df = pd.read_csv(raw_csv_path, encoding='utf-8', engine='python', on_bad_lines='skip', quotechar='"', decimal=',',
+    #                      usecols=["OPERACION", "DESTINACION", "REGIMEN", "AÑO", "MES", "ADUANA", "COTIZACION", 
+    #                               "MEDIO TRANSPORTE", "CANAL", "ITEM", "PAIS ORIGEN", "PAIS PROCEDENCIA/DESTINO", "USO",
+    #                               "UNIDAD MEDIDA ESTADISTICA", "CANTIDAD ESTADISTICA", "KILO NETO", "KILO BRUTO", "FOB DOLAR",
+    #                               "FLETE DOLAR", "SEGURO DOLAR", "IMPONIBLE DOLAR", "IMPONIBLE GS", "AJUSTE A INCLUIR",
+    #                               "AJUSTE A DEDUCIR", "POSICION ", "RUBRO", "DESC CAPITULO" ,"DESC PARTIDA", "DESC POSICION",
+    #                               "MERCADERIA", "MARCA ITEM", "ACUERDO"])
+
+    #     df.columns = clean_column_names(df.columns)
+    #     df = df.replace('¿', '', regex=True)
             
-        cleaned_csv_path = "/tmp/cleaned_file.csv"
-        df.to_csv(cleaned_csv_path, index=False, encoding='utf-8')
-        bucket.blob(blob_paths(logical_date)["cleaned_blob_path"]).upload_from_filename(cleaned_csv_path)
+    #     cleaned_csv_path = "/tmp/cleaned_file.csv"
+    #     df.to_csv(cleaned_csv_path, index=False, encoding='utf-8')
+    #     bucket.blob(blob_paths(logical_date)["cleaned_blob_path"]).upload_from_filename(cleaned_csv_path)
 
     @task
     def source_object(logical_date):
-        return f'{blob_paths(logical_date)["cleaned_blob_path"]}'
+        raw_blob_name = get_paths(logical_date)["raw_gcp_bucket_path"]
+        return raw_blob_name
     
     # @task
     # def bq_table(logical_date):
@@ -146,10 +169,10 @@ def monthly_csv_pipeline():
     )
 
 
-    t1 = upload_blob_from_memory()
-    t2 = cleaned_file()
-    t3 = gcs_to_bigquery
+    t1 = download_to_local()
+    t2 = upload_to_gcs(t1)
+    t4 = delete_localfile()
 
-    t1 >> t2 >> t3 >> dbt_transformation
-
+    t1 >> t2 >> gcs_to_bigquery >> t4 >> dbt_transformation
+    
 monthly_csv_pipeline()
