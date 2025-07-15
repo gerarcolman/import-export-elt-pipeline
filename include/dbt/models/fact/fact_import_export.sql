@@ -35,7 +35,6 @@ final_fct AS (
         stg.operation_id,
         dates.date_id,
         customs.customs_id, 
-        stg.cotizacion,
         transports.transport_id,
         stg.channel,
         c1.country_id AS country_origin_id,
@@ -47,28 +46,27 @@ final_fct AS (
         stg.usd_freight,
         stg.usd_insurance,
         stg.usd_totals,
-        stg.gs_totals,
         hs_code.hs_code,
         stg.merchandise,
         stg.brand,
         stg.acuerdo
 
     FROM stg_raw_table AS stg
-    INNER JOIN customs_regimes 
+    LEFT JOIN customs_regimes 
     ON stg.operation_id=customs_regimes.operation_id
-    INNER JOIN customs
+    LEFT JOIN customs
     ON stg.customs_name=customs.customs_name
-    INNER JOIN transports
+    LEFT JOIN transports
     ON stg.transport_type=transports.transport_type
-    INNER JOIN countries AS c1
+    LEFT JOIN countries AS c1
     ON stg.country_origin=c1.country_name
-    INNER JOIN countries AS c2
+    LEFT JOIN countries AS c2
     ON stg.country_origin_destination=c2.country_name
-    INNER JOIN measurements
+    LEFT JOIN measurements
     ON stg.measurement_name=measurements.measurement_name
-    INNER JOIN hs_code
+    LEFT JOIN hs_code
     ON stg.hs_code=hs_code.hs_code
-    INNER JOIN dates
+    LEFT JOIN dates
     ON stg.year=dates.year
     AND stg.month_name=dates.month_name
 

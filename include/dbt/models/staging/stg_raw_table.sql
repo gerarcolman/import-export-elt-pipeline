@@ -9,8 +9,7 @@ transform AS (
         regimen AS regime,
         `año` AS year,
         mes AS month_name,
-        aduana AS customs_name,	
-        cotizacion,	
+        aduana AS customs_name,		
         CASE 
             WHEN medio_transporte IS NULL AND aduana IN ('AEROP. PETTIROSSI', 'AEROPUERTO GUARANI') THEN 'AVION'
             WHEN medio_transporte IS NULL AND aduana = 'CIUDAD DEL ESTE' AND (pais_origen = 'BRASIL' OR pais_procedenciadestino = 'BRASIL') THEN 'CAMION'
@@ -19,8 +18,18 @@ transform AS (
         END AS transport_type,
         canal AS channel,
         item,	
-        pais_origen AS country_origin,	
-        pais_procedenciadestino AS country_origin_destination,	
+        TRIM(
+            CASE
+                WHEN REGEXP_CONTAINS(pais_origen, r'^[A-Z]{2} - ') THEN SUBSTR(pais_origen, 6) 
+                ELSE pais_origen 
+            END
+        ) AS country_origin,
+        TRIM(
+            CASE
+                WHEN REGEXP_CONTAINS(pais_procedenciadestino, r'^[A-Z]{2} - ') THEN SUBSTR(pais_procedenciadestino, 6) 
+                ELSE pais_procedenciadestino 
+            END
+        ) AS country_origin_destination,	
         uso AS usage,	
         CASE
             WHEN unidad_medida_estadistica = 'KG.BRUTO' THEN 'KILOGRAMO'
@@ -31,13 +40,13 @@ transform AS (
         flete_dolar AS usd_freight,	
         seguro_dolar AS usd_insurance,	
         imponible_dolar AS usd_totals,	
-        imponible_gs AS gs_totals,
         posicion AS hs_code,
         rubro,
         desc_capitulo,
         desc_partida,	
-        mercaderia AS merchandise,	
-        marca_item AS brand,	
+        mercaderia AS merchandise,
+        desc_subitem	
+        UPPER(COALESCE(marca_item, marca_subitem)) AS brand,	
         acuerdo
     FROM source
 )
