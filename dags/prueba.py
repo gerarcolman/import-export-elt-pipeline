@@ -27,7 +27,7 @@ def extract_date_parts(logical_date: datetime):
 def get_paths(logical_date: datetime):
     year = extract_date_parts(logical_date)["year"]
     url_month = extract_date_parts(logical_date)["url_month"]
-    url = f"https://datosabiertos.aduana.gov.py/all_data/{year}/{url_month}/{year}_{url_month}_Nivel_Item.csv"
+    url = f"https://datosabiertos.aduana.gov.py/all_data/{year}/{url_month}/{year}_{url_month}.csv"
     raw_localfile_path = f"/tmp/raw_import_export_{year}_{url_month}.csv"
     raw_gcp_bucket_path = f"raw/import-export_{year}_{url_month}.csv"
 
@@ -82,6 +82,7 @@ def monthly_csv_pipeline():
 
         df = pd.read_csv(local_file, encoding="utf-8", on_bad_lines="skip", engine="python", decimal=',', quotechar='"')
         df.columns = clean_column_names(df.columns)
+        df = df.drop(columns=["oficializacion", "cancelacion"], errors="ignore")
         df.to_csv(local_file, index=False, encoding="utf-8")
 
         return local_file
@@ -106,29 +107,6 @@ def monthly_csv_pipeline():
         local_file = ti.xcom_pull(task_ids="download_to_local")
 
         os.remove(local_file)
-
-    # @task
-    # def cleaned_file(logical_date):
-    #     import pandas as pd
-
-    #     storage_client = storage.Client()
-    #     bucket = storage_client.bucket(BUCKET_NAME)
-
-    #     raw_csv_path = f'gs://{BUCKET_NAME}/{blob_paths(logical_date)["raw_blob_path"]}'
-    #     df = pd.read_csv(raw_csv_path, encoding='utf-8', engine='python', on_bad_lines='skip', quotechar='"', decimal=',',
-    #                      usecols=["OPERACION", "DESTINACION", "REGIMEN", "AÑO", "MES", "ADUANA", "COTIZACION", 
-    #                               "MEDIO TRANSPORTE", "CANAL", "ITEM", "PAIS ORIGEN", "PAIS PROCEDENCIA/DESTINO", "USO",
-    #                               "UNIDAD MEDIDA ESTADISTICA", "CANTIDAD ESTADISTICA", "KILO NETO", "KILO BRUTO", "FOB DOLAR",
-    #                               "FLETE DOLAR", "SEGURO DOLAR", "IMPONIBLE DOLAR", "IMPONIBLE GS", "AJUSTE A INCLUIR",
-    #                               "AJUSTE A DEDUCIR", "POSICION ", "RUBRO", "DESC CAPITULO" ,"DESC PARTIDA", "DESC POSICION",
-    #                               "MERCADERIA", "MARCA ITEM", "ACUERDO"])
-
-    #     df.columns = clean_column_names(df.columns)
-    #     df = df.replace('¿', '', regex=True)
-            
-    #     cleaned_csv_path = "/tmp/cleaned_file.csv"
-    #     df.to_csv(cleaned_csv_path, index=False, encoding='utf-8')
-    #     bucket.blob(blob_paths(logical_date)["cleaned_blob_path"]).upload_from_filename(cleaned_csv_path)
 
     @task
     def source_object(logical_date):
