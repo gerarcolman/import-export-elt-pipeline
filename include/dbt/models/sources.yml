@@ -5,8 +5,8 @@ sources:
     description: > 
       Raw csv file downloaded monthly from https://www.dnit.gov.py/web/portal-institucional/datos-abiertos 
       transformed into a table containing all the import export data from Paraguay
-    database: importaciones-456518
-    schema: raw_import_export
+    database: "{{ env_var('MY_GCP_PROJECT_ID') }}"
+    schema: "{{ env_var('MY_DATASET') }}"
     tables: 
       - name: datos_abiertos_raw 
        

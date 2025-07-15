@@ -36,3 +36,5 @@ include/dbt/logs/
 
 # Astro CLI
 .astro/
+
+replacements.txt

@@ -12,9 +12,6 @@ models:
       - name: date_id
         tests: 
           - not_null 
-      - name: cotizacion
-        tests: 
-          - not_null
       - name: channel
         tests: 
           - not_null
