@@ -3,7 +3,8 @@ WITH source AS (
 ),
 
 transform AS (
-    SELECT 
+    SELECT
+        despacho_cifrado AS clearance_id, 
         operacion AS operation,	
         destinacion AS operation_id,	
         regimen AS regime,
@@ -16,8 +17,7 @@ transform AS (
             WHEN medio_transporte IS NULL AND aduana IN ('CAMPESTRE S.A.', 'INFANTE RIVAROLA', 'JOSE FALCON', 'MARISCAL ESTIGARRIBIA', 'PEDRO JUAN CABALLERO', 'PUERTO SECO BOREAL') THEN 'CAMION'
             ELSE medio_transporte
         END AS transport_type,
-        canal AS channel,
-        item,	
+        canal AS channel,	
         TRIM(
             CASE
                 WHEN REGEXP_CONTAINS(pais_origen, r'^[A-Z]{2} - ') THEN SUBSTR(pais_origen, 6) 
@@ -36,17 +36,17 @@ transform AS (
             ELSE unidad_medida_estadistica
         END AS measurement_name,	
         cantidad_estadistica AS quantity,	
-        fob_dolar AS usd_fob,	
-        flete_dolar AS usd_freight,	
-        seguro_dolar AS usd_insurance,	
-        imponible_dolar AS usd_totals,	
+        CASE
+            WHEN cantidad_subitem <> 0 AND precion_unitario_subitem <> 0 THEN (cantidad_subitem * precion_unitario_subitem)
+            ELSE fob_dolar
+        END AS usd_fob,			
         posicion AS hs_code,
         rubro,
         desc_capitulo,
         desc_partida,	
-        mercaderia AS merchandise,
-        desc_subitem	
-        UPPER(COALESCE(marca_item, marca_subitem)) AS brand,	
+        mercaderia AS item,
+        desc_subitem AS subitem,	
+        TRIM(UPPER(COALESCE(marca_item, marca_subitem, 'SIN MARCA'))) AS brand,	
         acuerdo
     FROM source
 )

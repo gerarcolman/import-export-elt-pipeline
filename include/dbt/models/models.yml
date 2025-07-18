@@ -6,10 +6,16 @@ models:
     config:
       materialized: table
     columns:
+      - name: clearance_id
+        tests:
+          - not_null
       - name: operation_id
         tests:
           - not_null
       - name: date_id
+        tests: 
+          - not_null
+      - name: customs_id
         tests: 
           - not_null 
       - name: channel
@@ -22,19 +28,13 @@ models:
           - not_null
           - accepted_values:
               values: ['NUEVO', 'USADO']
-      - name: quantity
+      - name: hs_code
+        tests:
+          - not_null
+      - name: brand
         tests: 
           - not_null
       - name: usd_fob
-        tests: 
-          - not_null
-      - name: usd_freight
-        tests: 
-          - not_null
-      - name: usd_insurance
-        tests: 
-          - not_null
-      - name: usd_totals
         tests: 
           - not_null
 

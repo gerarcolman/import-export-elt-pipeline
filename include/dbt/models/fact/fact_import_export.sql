@@ -32,6 +32,7 @@ dates AS (
 
 final_fct AS (
     SELECT
+        stg.clearance_id,
         stg.operation_id,
         dates.date_id,
         customs.customs_id, 
@@ -40,16 +41,17 @@ final_fct AS (
         c1.country_id AS country_origin_id,
         c2.country_id AS country_origin_destination_id,
         stg.usage,
-        measurements.measurement_id,
         stg.quantity,
-        stg.usd_fob,
-        stg.usd_freight,
-        stg.usd_insurance,
-        stg.usd_totals,
+        measurements.measurement_id,
         hs_code.hs_code,
-        stg.merchandise,
-        stg.brand,
-        stg.acuerdo
+        stg.item,
+        stg.subitem,
+        CASE
+            WHEN REGEXP_CONTAINS(stg.brand, r'[A-Za-z]') THEN stg.brand
+            ELSE 'SIN MARCA'
+        END AS brand,
+        stg.acuerdo,
+        ROUND(stg.usd_fob, 2) AS usd_fob
 
     FROM stg_raw_table AS stg
     LEFT JOIN customs_regimes 
